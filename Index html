@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotewave — Live Tick Analysis for Deriv Synthetic Markets</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/landing.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<header>
+  <div class="logo"><span class="dot"></span>Quote<span>wave</span></div>
+  <nav>
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#disclaimer">Disclaimer</a>
+  </nav>
+  <a class="cta" href="app.html">Launch tool</a>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">Live digit &amp; direction analysis for Deriv synthetic indices</div>
+    <h1>Read the <span class="wave">wave</span> in every quote before you trade it.</h1>
+    <p class="lead">Quotewave streams live ticks straight from Deriv and breaks every quote down into the patterns traders actually watch — parity, thresholds, matches, and streaks — in one dashboard.</p>
+    <div class="hero-actions">
+      <a class="btn-primary" href="app.html">Open the dashboard</a>
+      <a class="btn-ghost" href="#how">How it works</a>
+    </div>
+
+    <div class="tape-preview">
+      <div class="lbl">Sample tape</div>
+      <div class="tape-chips" id="sampleTape"></div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="section-head">
+      <div class="eyebrow">What it tracks</div>
+      <h2>Every angle on the last digit.</h2>
+      <p>The same patterns that show up in match/differ, rise/fall, over/under, and even/odd contracts — computed live, not after the fact.</p>
+    </div>
+    <div class="grid">
+      <div class="card"><div class="num">01</div><h3>Rise / Fall streaks</h3><p>Live direction tracking with current and longest streak counters, so momentum runs are obvious at a glance.</p></div>
+      <div class="card"><div class="num">02</div><h3>Even / Odd split</h3><p>Running parity percentage across your session, updated with every tick.</p></div>
+      <div class="card"><div class="num">03</div><h3>Over / Under threshold</h3><p>An adjustable threshold slider recalculates the over/under split instantly.</p></div>
+      <div class="card"><div class="num">04</div><h3>Match / Differ</h3><p>Pick a target digit and watch match frequency shift in real time.</p></div>
+      <div class="card"><div class="num">05</div><h3>Digit frequency</h3><p>A full 0–9 distribution bar chart built from your live session data.</p></div>
+      <div class="card"><div class="num">06</div><h3>Trade log</h3><p>Log trades manually or sync your real closed-trade history straight from your Deriv account.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="how">
+    <div class="section-head">
+      <div class="eyebrow">Getting started</div>
+      <h2>Three steps to a live dashboard.</h2>
+    </div>
+    <div class="steps">
+      <div class="step"><div class="idx">01</div><div><h3>Grab an App ID</h3><p>Use Deriv's public test ID (1089) to start instantly, or register your own at developers.deriv.com.</p></div></div>
+      <div class="step"><div class="idx">02</div><div><h3>Optionally add an API token</h3><p>Create a read-scope token in your Deriv account settings to authorize and sync your real trade history.</p></div></div>
+      <div class="step"><div class="idx">03</div><div><h3>Connect and watch</h3><p>Pick a symbol, hit connect, and the tape starts streaming — stats update with every tick.</p></div></div>
+    </div>
+  </section>
+
+  <section class="section" id="disclaimer">
+    <div class="disclaimer">
+      <b>Quotewave is an analysis tool, not financial advice.</b> It surfaces statistical patterns in publicly streamed tick data — it does not predict outcomes, and past digit or price behavior does not determine future ticks. Trading synthetic indices carries real risk of loss. Trade log data is stored locally in your browser or device; Quotewave does not place trades on your behalf.
+    </div>
+  </section>
+
+  <section class="cta-band">
+    <h2>Your dashboard is one click away.</h2>
+    <p>No signup. Just an App ID and, optionally, your Deriv token.</p>
+    <a class="btn-primary" href="app.html">Launch Quotewave</a>
+  </section>
+</main>
+
+<footer>
+  Quotewave · market data via the Deriv WebSocket API · built for traders who read the tape
+  <div style="margin-top:6px; color:var(--dim); font-size:10.5px;">v1.0.0</div>
+</footer>
+
+<script>
+  const digits = [3,7,4,4,9,1,8,0,5,2,6,4,9,3];
+  const wrap = document.getElementById('sampleTape');
+  digits.forEach(d => {
+    const c = document.createElement('div');
+    c.className = 'tchip ' + (d % 2 === 0 ? 'e' : 'o');
+    c.textContent = d;
+    wrap.appendChild(c);
+  });
+</script>
+
+</body>
+</html>
