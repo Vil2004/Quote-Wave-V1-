@@ -1,0 +1,36 @@
+/* Quotewave — style.css
+   Shared design tokens, resets, and base element styles used by both
+   the landing page and the dashboard. */
+
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --bg: #0B0E11;
+    --panel: #12161C;
+    --panel-2: #161B22;
+    --border: #232A34;
+    --text: #E8EAED;
+    --muted: #8B93A1;
+    --dim: #565F6E;
+    --gold: #D4A94E;
+    --gold-dim: #6B5A32;
+    --blue: #5B8DEF;
+    --green: #3FB68B;
+    --red: #E5484D;
+    --radius: 3px;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--text);}
+  body{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    line-height:1.5;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3,.display{font-family:'Space Grotesk', sans-serif;}
+
+  ::selection{background:var(--gold-dim); color:var(--text);}
+
+  a{color:var(--gold);}
