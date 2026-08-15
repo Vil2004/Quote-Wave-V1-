@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quotewave — Live Deriv Dashboard</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <a href="index.html" style="color:var(--dim); font-size:11px; text-decoration:none; margin-right:6px;">&larr; site</a>
+    <div class="mark" id="connMark"></div>
+    <div>
+      <div class="title">Quote<span>wave</span></div>
+      <div class="sub">Deriv digit &amp; direction terminal</div>
+    </div>
+  </div>
+
+  <div class="conn-form">
+    <input type="text" id="appIdInput" placeholder="App ID" value="1089">
+    <input type="password" id="tokenInput" placeholder="API token (optional)">
+    <label class="remember-label"><input type="checkbox" id="rememberCredentials"> Remember</label>
+    <select id="symbolSelect">
+      <optgroup label="Volatility">
+        <option value="R_10">Volatility 10</option>
+        <option value="R_25">Volatility 25</option>
+        <option value="R_50" selected>Volatility 50</option>
+        <option value="R_75">Volatility 75</option>
+        <option value="R_100">Volatility 100</option>
+      </optgroup>
+      <optgroup label="Volatility (1s)">
+        <option value="1HZ10V">Volatility 10 (1s)</option>
+        <option value="1HZ15V">Volatility 15 (1s)</option>
+        <option value="1HZ25V">Volatility 25 (1s)</option>
+        <option value="1HZ30V">Volatility 30 (1s)</option>
+        <option value="1HZ50V">Volatility 50 (1s)</option>
+        <option value="1HZ75V">Volatility 75 (1s)</option>
+        <option value="1HZ90V">Volatility 90 (1s)</option>
+        <option value="1HZ100V">Volatility 100 (1s)</option>
+      </optgroup>
+      <optgroup label="Boom">
+        <option value="BOOM300N">Boom 300</option>
+        <option value="BOOM500">Boom 500</option>
+        <option value="BOOM600">Boom 600</option>
+        <option value="BOOM900">Boom 900</option>
+        <option value="BOOM1000">Boom 1000</option>
+      </optgroup>
+      <optgroup label="Crash">
+        <option value="CRASH300N">Crash 300</option>
+        <option value="CRASH500">Crash 500</option>
+        <option value="CRASH600">Crash 600</option>
+        <option value="CRASH900">Crash 900</option>
+        <option value="CRASH1000">Crash 1000</option>
+      </optgroup>
+      <optgroup label="Jump">
+        <option value="JD10">Jump 10</option>
+        <option value="JD25">Jump 25</option>
+        <option value="JD50">Jump 50</option>
+        <option value="JD75">Jump 75</option>
+        <option value="JD100">Jump 100</option>
+      </optgroup>
+      <optgroup label="Step">
+        <option value="stpRNG">Step 100</option>
+        <option value="stpRNG2">Step 200</option>
+        <option value="stpRNG3">Step 300</option>
+        <option value="stpRNG4">Step 400</option>
+        <option value="stpRNG5">Step 500</option>
+      </optgroup>
+      <optgroup label="Range Break">
+        <option value="RDBEAR">Range Break 100</option>
+        <option value="RDBULL">Range Break 200</option>
+      </optgroup>
+    </select>
+    <button class="primary" id="connectBtn">Connect</button>
+    <button class="ghost" id="disconnectBtn" style="display:none;">Disconnect</button>
+  </div>
+</header>
+
+<main>
+
+  <div class="status-line" id="statusLine">Not connected. Enter an App ID (1089 works for testing) and hit Connect — no token needed just to watch live ticks.</div>
+
+  <!-- Settings -->
+  <div class="panel" id="settingsPanel">
+    <div class="panel-head">
+      <div><div class="eyebrow">Configure</div><h2>Settings</h2></div>
+      <span class="meta" id="settingsStatus"></span>
+    </div>
+    <div class="settings-grid">
+      <div class="setting-field">
+        <label>Parity alert %</label>
+        <input type="number" id="setParityPct" min="0" max="100">
+      </div>
+      <div class="setting-field">
+        <label>Threshold alert %</label>
+        <input type="number" id="setThresholdPct" min="0" max="100">
+      </div>
+      <div class="setting-field">
+        <label>Hot digit %</label>
+        <input type="number" id="setHotDigitPct" min="0" max="100">
+      </div>
+      <div class="setting-field">
+        <label>Cold digit %</label>
+        <input type="number" id="setColdDigitPct" min="0" max="100">
+      </div>
+      <div class="setting-field">
+        <label>Streak watch length</label>
+        <input type="number" id="setStreakWatch" min="1" max="50">
+      </div>
+      <div class="setting-field">
+        <label>Streak critical length</label>
+        <input type="number" id="setStreakCritical" min="1" max="50">
+      </div>
+      <div class="setting-field">
+        <label>Choppiness alert %</label>
+        <input type="number" id="setChopPct" min="0" max="100">
+      </div>
+    </div>
+    <div class="row" style="margin-top:4px;">
+      <button class="primary" id="saveSettingsBtn">Save settings</button>
+      <button class="ghost" id="resetSettingsBtn">Reset to defaults</button>
+    </div>
+    <div class="settings-note">These thresholds control when alerts fire in the panel below. "Remember" (next to the App ID field) saves your App ID/token on this device only.</div>
+  </div>
+
+  <!-- Market Engine Report -->
+  <div class="engine-panel" id="enginePanel">
+    <div class="engine-head">
+      <div>
+        <div class="engine-eyebrow">Market engine</div>
+        <div class="engine-bias" id="engineBias">Gathering data…</div>
+      </div>
+      <div class="engine-pulse"><span class="pulse-dot" id="pulseDot"></span><span id="engineAsOf">waiting for ticks</span></div>
+    </div>
+
+    <div class="engine-meters">
+      <div class="meter">
+        <div class="meter-top"><span>Parity lean</span><span id="meterParityVal">—</span></div>
+        <div class="meter-track"><div class="meter-mid"></div><div class="meter-fill" id="meterParityFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Threshold lean</span><span id="meterThreshVal">—</span></div>
+        <div class="meter-track"><div class="meter-mid"></div><div class="meter-fill" id="meterThreshFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Momentum</span><span id="meterMomVal">—</span></div>
+        <div class="meter-track"><div class="meter-mid"></div><div class="meter-fill" id="meterMomFill"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Choppiness</span><span id="meterChopVal">—</span></div>
+        <div class="meter-track"><div class="meter-mid" style="left:0; width:1px;"></div><div class="meter-fill chop" id="meterChopFill"></div></div>
+      </div>
+    </div>
+
+    <p class="engine-report" id="engineReport">Connect and let a few ticks come in — the engine builds its read from live session data, not predictions.</p>
+    <div class="engine-note">Descriptive statistics only — not a trade signal or financial advice.</div>
+  </div>
+
+  <div class="row" style="grid-template-columns: 1fr 1.4fr;">
+    <!-- Signal panel -->
+    <div class="panel signal-panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Read</div><h2>Signal panel</h2></div>
+        <div class="badge" id="signalStatus">Gathering</div>
+      </div>
+      <div class="signal-main">
+        <div class="signal-digit" id="signalDigit">—</div>
+        <div class="signal-conf">
+          <div class="signal-conf-label">Confidence</div>
+          <div class="signal-conf-val" id="signalConfidence">—</div>
+        </div>
+      </div>
+      <div class="kv"><span class="k">Statistical alignment</span><span class="v" id="signalAgreement">—</span></div>
+      <div class="kv"><span class="k">Market condition</span><span class="v" id="signalCondition">—</span></div>
+      <div class="signal-disclaimer">Reflects the most statistically prominent digit this session — a description, not a prediction.</div>
+    </div>
+
+    <!-- Strategy agreement -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Breakdown</div><h2>Strategy agreement</h2></div>
+        <div class="meta" id="agreementMeta">0 / 4</div>
+      </div>
+      <table class="strategy-table">
+        <thead><tr><th>Metric</th><th>Majority read</th><th>Detail</th></tr></thead>
+        <tbody id="strategyBody">
+          <tr><td colspan="3" class="empty-cell">Connect to populate.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Statistics -->
+  <div class="row single">
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Consolidated</div><h2>Statistics</h2></div>
+        <div class="meta" id="statsSessionMeta">0 ticks</div>
+      </div>
+      <table class="strategy-table">
+        <tbody id="statsBody">
+          <tr><td colspan="2" class="empty-cell">Connect to populate.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="row top">
+    <!-- Live price + digit tape -->
+
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Live feed</div>
+          <h2 id="symbolLabel">Volatility 50</h2>
+        </div>
+        <div class="meta" id="tickCountMeta">0 ticks</div>
+      </div>
+
+      <div class="price-hero">
+        <div>
+          <div class="price-symbol" id="priceSymbolSub">last quote</div>
+          <div class="price-value" id="priceValue">— . —</div>
+        </div>
+        <div class="price-dir" id="priceDir"></div>
+      </div>
+
+      <div class="tape-wrap">
+        <div class="tape-label">Last-digit tape · newest on the right, colored by even / odd</div>
+        <div class="tape" id="digitTape"></div>
+      </div>
+    </div>
+
+    <!-- Rise/Fall + streak -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Direction</div>
+          <h2>Rise / Fall</h2>
+        </div>
+        <div class="meta" id="riseFallTotal">0 moves</div>
+      </div>
+
+      <div class="split-stat">
+        <div class="half green"><div class="num" id="riseCount">0</div><div class="lbl">Rise</div></div>
+        <div class="half red"><div class="num" id="fallCount">0</div><div class="lbl">Fall</div></div>
+      </div>
+
+      <div class="kv"><span class="k">Current streak</span><span class="v" id="currentStreak">—</span></div>
+      <div class="kv"><span class="k">Longest rise streak</span><span class="v" id="longestRise">0</span></div>
+      <div class="kv"><span class="k">Longest fall streak</span><span class="v" id="longestFall">0</span></div>
+
+      <div class="streak-track" id="streakTrack"></div>
+    </div>
+  </div>
+
+  <div class="row stats">
+    <!-- Even / Odd -->
+    <div class="panel">
+      <div class="panel-head"><div><div class="eyebrow">Parity</div><h2>Even / Odd</h2></div></div>
+      <div class="split-stat">
+        <div class="half blue"><div class="num" id="evenPct">—</div><div class="lbl">Even</div></div>
+        <div class="half gold"><div class="num" id="oddPct">—</div><div class="lbl">Odd</div></div>
+      </div>
+    </div>
+
+    <!-- Over / Under -->
+    <div class="panel">
+      <div class="panel-head"><div><div class="eyebrow">Threshold</div><h2>Over / Under <span id="thresholdLabel">5</span></h2></div></div>
+      <input type="range" id="thresholdSlider" min="0" max="9" value="5" style="width:100%; margin-bottom:10px;">
+      <div class="split-stat">
+        <div class="half green"><div class="num" id="overPct">—</div><div class="lbl">Over</div></div>
+        <div class="half red"><div class="num" id="underPct">—</div><div class="lbl">Under</div></div>
+      </div>
+    </div>
+
+    <!-- Matches / Differs -->
+    <div class="panel">
+      <div class="panel-head"><div><div class="eyebrow">Target digit</div><h2>Match / Differ</h2></div></div>
+      <select id="targetDigit" style="width:100%; margin-bottom:10px;">
+        <option value="0">Target: 0</option><option value="1">Target: 1</option>
+        <option value="2">Target: 2</option><option value="3">Target: 3</option>
+        <option value="4" selected>Target: 4</option><option value="5">Target: 5</option>
+        <option value="6">Target: 6</option><option value="7">Target: 7</option>
+        <option value="8">Target: 8</option><option value="9">Target: 9</option>
+      </select>
+      <div class="split-stat">
+        <div class="half gold"><div class="num" id="matchPct">—</div><div class="lbl">Matches</div></div>
+        <div class="half blue"><div class="num" id="differPct">—</div><div class="lbl">Differs</div></div>
+      </div>
+    </div>
+
+    <!-- Digit frequency -->
+    <div class="panel">
+      <div class="panel-head"><div><div class="eyebrow">Distribution</div><h2>Digit frequency</h2></div></div>
+      <div id="freqBars"></div>
+    </div>
+  </div>
+
+  <!-- Live tick chart -->
+  <div class="row single">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Price over time</div>
+          <h2>Live tick chart</h2>
+        </div>
+        <div class="meta" id="chartMeta">—</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="tickChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="grid-template-columns: 1fr 1fr;">
+    <!-- Alerts -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Watching</div>
+          <h2>Recent alerts</h2>
+        </div>
+        <div class="alert-counts" id="alertCounts"></div>
+      </div>
+      <div id="alertsList">
+        <div class="empty-state">No alerts yet — they'll appear as patterns emerge in the live data.</div>
+      </div>
+    </div>
+
+    <!-- Tick history -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Last 20</div>
+          <h2>Tick history</h2>
+        </div>
+      </div>
+      <div class="tick-grid" id="tickGrid">
+        <div class="empty-state">Ticks will appear here once connected.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row" style="grid-template-columns: 1fr 1.4fr;">
+    <!-- Data quality monitor -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Feed health</div><h2>Data quality monitor</h2></div>
+        <div class="badge on" id="dqBadge">—</div>
+      </div>
+      <div class="kv"><span class="k">Tick latency</span><span class="v" id="dqLatency">—</span></div>
+      <div class="kv"><span class="k">Avg tick interval</span><span class="v" id="dqInterval">—</span></div>
+      <div class="kv"><span class="k">Delayed ticks</span><span class="v" id="dqDelayed">0</span></div>
+      <div class="kv"><span class="k">Ticks this session</span><span class="v" id="dqTotal">0</span></div>
+    </div>
+
+    <!-- Market watchlist -->
+    <div class="panel">
+      <div class="panel-head">
+        <div><div class="eyebrow">Compare</div><h2>Market watchlist</h2></div>
+        <button class="ghost" id="watchlistToggle" style="padding:6px 12px; font-size:11px;">Enable watchlist</button>
+      </div>
+      <div class="watchlist-note" id="watchlistNote">Opens a few additional light connections to show several markets side by side. Off by default.</div>
+      <table class="strategy-table" id="watchlistTable" style="display:none;">
+        <thead><tr><th>Market</th><th>Price</th><th>Last digit</th><th>Trend</th></tr></thead>
+        <tbody id="watchlistBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Trade log -->
+  <div class="row single">
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="eyebrow">Your record</div>
+          <h2>Trade log</h2>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span class="badge" id="authBadge">Not authorized</span>
+          <button class="ghost" id="syncBtn" style="display:none;">Sync from Deriv</button>
+        </div>
+      </div>
+
+      <div class="log-form">
+        <select id="tradeType">
+          <option>Rise</option><option>Fall</option><option>Even</option><option>Odd</option>
+          <option>Over</option><option>Under</option><option>Matches</option><option>Differs</option>
+        </select>
+        <input type="text" id="tradeSymbol" placeholder="Symbol (e.g. R_50)">
+        <input type="text" id="tradeStake" placeholder="Stake">
+        <input type="text" id="tradePayout" placeholder="Payout if won">
+        <select id="tradeResult"><option value="win">Win</option><option value="loss">Loss</option></select>
+        <button class="primary" id="addTradeBtn">Log trade</button>
+      </div>
+
+      <table id="tradeTable">
+        <thead>
+          <tr><th>Time</th><th>Type</th><th>Symbol</th><th>Stake</th><th>Result</th><th>P/L</th><th></th></tr>
+        </thead>
+        <tbody id="tradeTableBody"></tbody>
+      </table>
+      <div class="empty-state" id="tradeEmptyState">No trades logged yet — add your first one above, or connect a token and sync your real history.</div>
+
+      <div class="pl-summary">
+        <div class="item">Trades: <b id="plCount">0</b></div>
+        <div class="item">Win rate: <b id="plWinRate">—</b></div>
+        <div class="item">Net P/L: <b id="plNet">0.00</b></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  Market data via Deriv WebSocket API · analysis only, not financial advice · trade log stored locally in this browser
+  <div style="margin-top:6px; color:var(--dim); font-size:10.5px;">Quotewave v1.0.0</div>
+</footer>
+
+<script src="js/utils.js"></script>
+<script src="js/config.js"></script>
+<script src="js/state.js"></script>
+<script src="js/settings.js"></script>
+<script src="js/api.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/signals.js"></script>
+<script src="js/analysis.js"></script>
+<script src="js/history.js"></script>
+<script src="js/watchlist.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
