@@ -1,5 +1,5 @@
 // Quotewave — api.js
-// Deriv WebSocket connection lifecycle: connect, subscribe, tick handling.
+ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`);
 
   function connect(){
     const appId = ($('appIdInput').value || '1089').trim();
